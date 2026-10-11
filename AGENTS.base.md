@@ -14,6 +14,7 @@ English. Product repos keep a **thin** root `AGENTS.md` that points here and may
 - **Migrations** → Database project `Add-Migration.ps1` only; **no** seed rows in migrations.
 - **Seeds** → class-based under `Seed/`; framework in **Core**.
 - **Front** → Nebular; English `$localize` / `i18n`; **published** `@bari77/*` only (lockstep versions); no `postinstall` package hacks; workspace grids on player/guild/team sheets.
+- **Cross-game UX** → same player job = same interaction model across LoL / WoW / Template (search the sibling before inventing; Nebular/`@bari77/*` already used on that surface wins; port twin UX in the same change set). See `cursor/rules/cross-game-ux-consistency.mdc`.
 - **Shared code** → Core (generic .NET) or DevKit (generic Angular). Game pillars → also update **Games.Template**.
 - **Federation** → `provideGameRemoteKernel` on remote `app.config` **and** exported route `providers`; no `providedIn: "root"` for kernel-dependent services.
 

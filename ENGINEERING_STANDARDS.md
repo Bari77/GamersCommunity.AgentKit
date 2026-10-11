@@ -112,6 +112,7 @@ Consumers pin **`GamersCommunity.Core`** (and Logging) to the same published ver
 - Reusable UI used by more than one Front belongs in **DevKit**, not copy-paste across remotes.
 - Player / guild / team **sheets must use a workspace grid** (editable layout + widgets). Do not ship a fixed one-off layout for those surfaces.
 - Platform user profile is a **shell** surface: no game-style workspace grid requirement.
+- **Cross-game UX coherence:** players switch remotes often. For a given job (roster ranks, applications, media, LFG, playground session, …), match the sibling game’s **control family and flow** (e.g. Nebular `nb-select` + confirm), not a one-off native or button-row variant. Domain labels may differ; affordances and confirmation should not. When improving one Front, update the structural twin (and Template when it is a pillar) in the same change set.
 
 ### 5.2 Internationalization (i18n)
 
