@@ -181,6 +181,23 @@ Standalone ports (e.g. `:4201` / `:4202`) use MSW when `useMocks: true`. Platfor
 
 **Do not** add per-game Nebular `*.security.ts` matrices into Platform for each new product. Remotes must not rely on shell Nebular ACL for guild/team/player actions. New games cloned from Template inherit rank-based capabilities only — no shell ACL fragment to merge.
 
+### 5.8 Front HTTP services (`BaseService`)
+
+- Game and Platform HTTP feature services **extend** `@bari77/gc-sdk` `BaseService` (local file may re-export it).
+- Prefer helpers over `this.http.*`:
+  - entity + `fromDto` → `getOne` / `getAll` / `post` / `put` / `postList`
+  - raw JSON / primitives / RPC DTOs → `getJson` / `postJson` / `putJson` / `delete`
+- Do **not** call `this.http` in feature services except for rare absolute URLs outside the Gateway API base (document why).
+- Platform must provide `GC_ENVIRONMENT` (`apiUrl`, `assetsBaseUrl`) in `app.config` when using the SDK base.
+- Absolute gateway probes (e.g. availability) may keep a dedicated non-BaseService client.
+
+### 5.9 Consumer bus dispatch & twin inheritance
+
+- Prefer `switch (message.Action?.ToUpperInvariant())` with UPPERCASE labels (`LIST`, `CREATE`, …) so Gateway Pascal actions stay case-safe.
+- CRUD-shaped resources (links, media, reference tables) should extend `GenericDataService` (Template / WoW pattern); full-custom domain (Guilds/Teams sheets) may stay plain `IBusService`.
+- Twin ports LoL ↔ WoW: same inheritance shape when the surface is a structural twin (e.g. TeamLinks ↔ GuildLinks).
+- Reference key naming may differ by schema (`Entitled` WoW vs `Code` LoL) — document in the game Front; do not force a rename across DBs.
+
 ---
 
 ## 6. Specs and documentation
