@@ -184,9 +184,11 @@ Standalone ports (e.g. `:4201` / `:4202`) use MSW when `useMocks: true`. Platfor
 ### 5.8 Front HTTP services (`BaseService`)
 
 - Game and Platform HTTP feature services **extend** `@bari77/gc-sdk` `BaseService` (local file may re-export it).
-- Prefer helpers over `this.http.*`:
-  - entity + `fromDto` → `getOne` / `getAll` / `post` / `put` / `postList`
-  - raw JSON / primitives / RPC DTOs → `getJson` / `postJson` / `putJson` / `delete`
+- **Structured responses always go through a model** with `static fromDto` — never a generic “raw JSON” helper on subclasses.
+- Helpers:
+  - entity / page / result object → `getOne` / `getAll` / `post` / `put` / `postList`
+  - scalar RPC → `get|post|put` + `Bool` / `Number` / `String`
+  - side-effect RPC (body ignored) → `postVoid` / `putVoid` / `delete`
 - Do **not** call `this.http` in feature services except for rare absolute URLs outside the Gateway API base (document why).
 - Platform must provide `GC_ENVIRONMENT` (`apiUrl`, `assetsBaseUrl`) in `app.config` when using the SDK base.
 - Absolute gateway probes (e.g. availability) may keep a dedicated non-BaseService client.
