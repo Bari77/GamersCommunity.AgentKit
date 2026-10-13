@@ -128,6 +128,21 @@ Consumers pin **`GamersCommunity.Core`** (and Logging) to the same published ver
 - **`@bari77/gc-*` packages are lockstep SemVer** (same version across the kit, Angular-style). Consumers must keep all `@bari77/*` entries on the **same** version; mixing `gc-ui@1.0.2` with `gc-sdk@1.0.1` is unsupported.
 - **Never** add `postinstall` (or similar) scripts that rewrite another package’s `package.json` or patch `node_modules`. If a dependency is too fragile, abandon that approach (fork, DevKit package, different library).
 
+#### SemVer for lockstep `@bari77/gc-*` (and NuGet Core when versioning)
+
+Choose the next tag from the **most severe** change in the release:
+
+| Change kind | Bump | Example |
+|-------------|------|---------|
+| Fix only (no public API / contract change) | **patch** | `1.0.6` → `1.0.7` |
+| Backward-compatible feature (additive API, new optional behavior) | **minor** | `1.0.6` → `1.1.0` |
+| Breaking / not backward-compatible | **major** | `1.1.0` → `2.0.0` |
+
+- Additive helpers on an existing class (e.g. `BaseService.postJson`) ⇒ **minor**, never patch.
+- Removing / renaming a public export, changing required call shapes, or breaking federation contracts ⇒ **major**.
+- Docs-only / internal-only with no consumer-visible change may stay unreleased, or ride along the next real bump.
+- Full publish procedure: DevKit `docs/RELEASE.md`.
+
 ### 5.4 Module Federation and DI (critical)
 
 The Platform shell loads **remote routes only**. It does **not** run the remote `bootstrap` / `app.config`.
@@ -154,6 +169,17 @@ Remotes keep **thin adapters**: `$localize` labels, game DTOs/models, SignalR hu
 ### 5.6 Playground (standalone remotes)
 
 Standalone ports (e.g. `:4201` / `:4202`) use MSW when `useMocks: true`. Platform RPC used by the kernel (e.g. `Users.Touch`) must be mocked like other Gateway calls. Prefer aligning playground chrome (banner, session chip, context bar) across games; extract to DevKit when twins appear.
+
+### 5.7 Authorization ownership (Platform vs games)
+
+| Layer | Owner | Mechanism |
+|-------|--------|-----------|
+| Shell Nebular ACL | **Platform.Front** only | `accessControlGlobal` (`events`, `moderation`, platform dashboards). |
+| Session role names | Platform | Generic `toAclRoles` → `admin_${slug}` / `moderator_${slug}` for shell chrome if needed — **not** game domain gates. |
+| Domain capabilities (roster, wall, media, LFG, …) | **Game remote** | Membership / ranks → `canModerate`, `canKick`, etc. Twin LoL ↔ WoW (+ Template when pillar). |
+| Authority | Backend (Private Gateway) | Always enforce; UI is advisory. |
+
+**Do not** add per-game Nebular `*.security.ts` matrices into Platform for each new product. Remotes must not rely on shell Nebular ACL for guild/team/player actions. New games cloned from Template inherit rank-based capabilities only — no shell ACL fragment to merge.
 
 ---
 
