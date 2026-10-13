@@ -104,6 +104,18 @@ Consumers pin **`GamersCommunity.Core`** (and Logging) to the same published ver
 
 ---
 
+### 4.7 C# code style (lint baseline)
+
+Source of truth: `AgentKit/lint/.editorconfig` + `Directory.Build.props` (StyleCop SA1402 / SA1649 only) + `stylecop.json`, synced into each repo root by `./AgentKit/scripts/Sync-Lint.ps1`. Never edit the synced copies; change AgentKit and resync.
+
+- 4 spaces, LF, UTF-8, final newline; Allman braces; braces always (`IDE0011`); `var` when the type is apparent.
+- **File-scoped namespaces** everywhere except EF `Migrations/`.
+- **One top-level type per file**, file named after the type (`SA1402`, `SA1649`). Partial classes split by concern use `Type.Concern.cs` (e.g. `PlayerPicture.PlayerMedia.cs`).
+- Naming: types / members / constants / `static readonly` fields PascalCase; interfaces `I*`; private fields `_camelCase`; parameters and locals camelCase (local `const` included); async methods end with `Async` (middlewares use `InvokeAsync`). Tests are exempt from the `Async` / member rules.
+- Explicit accessibility modifiers; `readonly` when possible; no unused `using` (`IDE0005`, enforced at build through `GenerateDocumentationFile`).
+- EF `DbSet<T>` properties are initialised with `= null!;`. XML doc comments must be valid (`cref` resolvable, `<param>` for every parameter once one is documented).
+- Check: `dotnet format <solution> --verify-no-changes` (0 changes) and `dotnet build` without warnings.
+
 ## 5. Frontend (Angular)
 
 ### 5.1 Design system
@@ -200,6 +212,22 @@ Standalone ports (e.g. `:4201` / `:4202`) use MSW when `useMocks: true`. Platfor
 - Twin ports LoL ↔ WoW: same inheritance shape when the surface is a structural twin (e.g. TeamLinks ↔ GuildLinks).
 - Reference key naming may differ by schema (`Entitled` WoW vs `Code` LoL) — document in the game Front; do not force a rename across DBs.
 
+### 5.10 TypeScript / Angular code style (lint baseline)
+
+Source of truth: published `@bari77/gc-lint` (lockstep with the other `@bari77/gc-*`). Each Front has `eslint.config.mjs` → `gcAngular({ prefix, remote })`, `.prettierrc` → `"@bari77/gc-lint/prettier"`, and the scripts `lint` (`prettier --check . && eslint .`) / `lint:fix`.
+
+- Prettier: 4 spaces, double quotes, semicolons, trailing commas, width 120, LF (YAML 2 spaces).
+- **One class / interface / enum per file**, kebab-case filenames with role suffix (`*.component.ts`, `*.service.ts`, `*.store.ts`, `*.model.ts`, `*.dto.ts`, `*.guard.ts`, …). DTO interfaces live in `dto/`, view models in `models/`. Barrels re-export interfaces with `export type { … }`.
+- Components: standalone, `templateUrl` + `styleUrl` (no inline template / styles, no inline `style=""`), control flow `@if` / `@for`, self-closing tags, selector prefix per app (`app` Platform, `wow`, `lol`, `tpl` Template, `gc` DevKit libs, `gcd` DevKit docs), root selector `<prefix>-root`. Root component is `AppComponent` in `app.component.ts`.
+- Members: explicit `public` / `protected` / `private`; explicit return types; order = fields → constructor → accessors → methods, and inside each group public → protected → private. Inject with `inject()` as fields declared before anything that uses them.
+- State: stores keep writable signals **private** with a `$` prefix (`private readonly $items = signal(...)`) and expose `public readonly items = computed(() => this.$items())`; mutations go through store methods (`setQuery`, `clearError`, …), never `.set` from outside.
+- Game remotes: no `providedIn: "root"`; services are provided on the remote route `providers` (`gc/no-provided-in-root` when `remote: true`).
+- `strict: true` in every `tsconfig.json`.
+
+### 5.11 One command after every change
+
+From `GamersCommunity.Local`: `./scripts/Lint-Workspace.ps1` (check) or `./scripts/Lint-Workspace.ps1 -Fix`; `-Only Platform,WorldOfWarcraft` to scope. It runs `npm run lint` in each Front + DevKit and `dotnet format --verify-no-changes` on each solution, and exits non-zero on any violation.
+
 ---
 
 ## 6. Specs and documentation
@@ -233,6 +261,7 @@ When proposing or writing code, an agent (or human) must:
 - [ ] Seeds via classes; migrations via `Add-Migration.ps1` only  
 - [ ] i18n English strings via `$localize` / `i18n`  
 - [ ] Federation-safe providers (no `providedIn: "root"` for kernel-dependent services)  
+- [ ] `./scripts/Lint-Workspace.ps1` green (or `npm run lint` + `dotnet format --verify-no-changes` in the touched repos)  
 - [ ] Specs / AGENTS touched only when behaviour or rules change  
 
 ---
