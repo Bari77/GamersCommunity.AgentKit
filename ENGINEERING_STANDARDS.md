@@ -66,7 +66,7 @@ Every Consumer (`Platform`, games, Template) boots through Core’s host helper 
 
 Game `Program.cs` must stay **thin**: bind game options, register game-specific DI (whispers, authZ, bus scan), and pass an `afterMigrate` seed delegate. Shared plumbing lives in Core.
 
-Every .NET host (Consumer host, Gateway, DevGateway) calls `AddGamersCommunityTelemetry`. Do not add a second OpenTelemetry bootstrap. Console Serilog sinks stay; Seq stays optional via `LoggerSettings`. Local export goes to the Aspire dashboard in `GamersCommunity.Local` (`http://127.0.0.1:18888`, OTLP `http://127.0.0.1:4317`). Outside Development, export stays off unless `Telemetry:OtlpEndpoint` is set.
+Every .NET host (Consumer host, Gateway, DevGateway) calls `AddGamersCommunityTelemetry`. Do not add a second OpenTelemetry bootstrap. Console Serilog sinks stay. A rolling file sink is added only when `LoggerSettings:FilePath` is set. Local export goes to the Aspire dashboard in `GamersCommunity.Local` (`http://127.0.0.1:18888`, OTLP `http://127.0.0.1:4317`). Outside Development, export stays off unless `Telemetry:OtlpEndpoint` is set.
 
 ### 4.2 Messaging and Platform clients
 
