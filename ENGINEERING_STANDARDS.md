@@ -68,6 +68,8 @@ Game `Program.cs` must stay **thin**: bind game options, register game-specific 
 
 Every .NET host (Consumer host, Gateway, DevGateway) calls `AddGamersCommunityTelemetry`. Do not add a second OpenTelemetry bootstrap. Console Serilog sinks stay. A rolling file sink is added only when `LoggerSettings:FilePath` is set. Local export goes to the Aspire dashboard in `GamersCommunity.Local` (`http://127.0.0.1:18888`, OTLP `http://127.0.0.1:4317`). Outside Development, export stays off unless `Telemetry:OtlpEndpoint` is set.
 
+Business spans and operation metrics go through `GamersTelemetry` (`GamersCommunity` source and meter). The bus router opens one span per message, named `Resource.Action`. An integration event is named by its type, on the publisher and on each subscriber. A finer step inside a handler uses `StartOperation` and becomes a child of the current span. Tags stay `operation` and `ok`/`error`. Do not tag user ids, emails, tokens, or payloads. HTTP rate and percentiles come from the ASP.NET meter. Rabbit consumers count `gc.bus.messages` and time RPC with `gc.bus.rpc.duration`. Business operations time `gc.operation.duration` and count `gc.operation.errors`. Aspire graphs those instruments per service name (`Platform MS`, `WorldOfWarcraft MS`, `LeagueOfLegends MS`, `Gateway`); it does not need a custom board in code.
+
 ### 4.2 Messaging and Platform clients
 
 - Prefer Core **`IRabbitRpcClient` / `CallAsync`** — no private Gateway/game `RabbitRpcClient` twins.
